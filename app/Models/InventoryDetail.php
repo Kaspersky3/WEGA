@@ -55,3 +55,5 @@ class InventoryDetail extends Model
 
 
 
+
+

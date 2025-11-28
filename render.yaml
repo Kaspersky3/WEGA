@@ -1,0 +1,60 @@
+services:
+  # Service web principal
+  - type: web
+    name: wega-app
+    runtime: docker
+    dockerfilePath: ./Dockerfile.prod
+    dockerContext: .
+    plan: free # ou starter, standard, pro
+    region: frankfurt # ou oregon, singapore, etc.
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: error
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: wega-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: wega-redis
+          type: redis
+          property: connectionString
+      - key: CACHE_DRIVER
+        value: redis
+      - key: SESSION_DRIVER
+        value: redis
+      - key: QUEUE_CONNECTION
+        value: redis
+    healthCheckPath: /
+    autoDeploy: true
+
+databases:
+  # Base de données MySQL
+  - name: wega-db
+    databaseName: wega
+    user: wega
+    plan: free # ou starter, standard, pro
+    region: frankfurt
+
+  # Alternative: PostgreSQL (décommentez si vous préférez PostgreSQL)
+  # - name: wega-db
+  #   databaseName: wega
+  #   user: wega
+  #   plan: free
+  #   region: frankfurt
+
+redis:
+  # Cache Redis
+  - name: wega-redis
+    plan: free # ou starter, standard, pro
+    region: frankfurt
+    maxmemoryPolicy: allkeys-lru
+

@@ -1,0 +1,85 @@
+# Stage 1: Build des assets
+FROM node:18-alpine AS node-builder
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci --legacy-peer-deps || npm install
+COPY vite.config.js ./
+COPY resources ./resources
+COPY public ./public
+RUN npm run build
+
+# Stage 2: Build de l'application PHP
+FROM php:8.2-fpm-alpine AS php-base
+
+# Installer les dépendances système
+RUN apk add --no-cache \
+    git \
+    curl \
+    libpng-dev \
+    libzip-dev \
+    oniguruma-dev \
+    postgresql-dev \
+    mysql-dev \
+    mysql-client \
+    nginx \
+    supervisor \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev
+
+# Installer les extensions PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) \
+    pdo_mysql \
+    pdo_pgsql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip
+
+# Installer Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Stage 3: Image finale
+FROM php-base
+
+WORKDIR /var/www/html
+
+# Créer les répertoires nécessaires
+RUN mkdir -p /var/log/supervisor /var/run/supervisor
+
+# Copier les fichiers de l'application
+COPY --chown=www-data:www-data . /var/www/html
+
+# Copier les assets compilés depuis le stage node-builder
+COPY --from=node-builder --chown=www-data:www-data /app/public/build /var/www/html/public/build
+
+# Installer les dépendances PHP (production uniquement)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts || true
+
+# Configurer les permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
+
+# Copier la configuration Nginx
+COPY docker/nginx/render.conf /etc/nginx/http.d/default.conf
+
+# Copier la configuration Supervisor
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copier la configuration PHP
+COPY docker/php/production.ini /usr/local/etc/php/conf.d/production.ini
+
+# Copier le script de démarrage
+COPY render-start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Exposer le port 80
+EXPOSE 80
+
+# Démarrer Supervisor qui gère Nginx et PHP-FPM
+CMD ["/start.sh"]
+
