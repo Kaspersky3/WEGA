@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\InventoryStoreRequest;
+use App\Http\Requests\InventoryImportRequest;
 use App\Models\Inventory;
 use App\Models\Product;
 use App\Services\InventoryService;
 use App\Services\ExportService;
+use App\Services\ImportService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -15,7 +17,8 @@ class InventoryController extends Controller
 {
     public function __construct(
         private InventoryService $inventoryService,
-        private ExportService $exportService
+        private ExportService $exportService,
+        private ImportService $importService
     )
     {
     }
@@ -214,6 +217,55 @@ class InventoryController extends Controller
         $filename = sprintf('inventaire-%s.%s', $inventory->reference, $format);
 
         return $this->exportService->download($header, $rows, $filename, $format);
+    }
+
+    public function import(InventoryImportRequest $request)
+    {
+        if ($request->user()) {
+            $this->authorize('create', Inventory::class);
+        }
+
+        $file = $request->file('csv_file');
+        $inventoryDate = Carbon::parse($request->inventory_date)->startOfDay();
+        $notes = $request->notes;
+
+        // Parser le fichier CSV
+        $result = $this->importService->parseInventoryFile($file);
+
+        // Si des erreurs critiques, retourner avec les erreurs
+        if (!empty($result['errors']) && empty($result['products'])) {
+            return redirect()
+                ->route('inventories.create')
+                ->withErrors(['csv_file' => 'Erreurs lors de l\'import : ' . implode(', ', $result['errors'])])
+                ->withInput();
+        }
+
+        // Si aucun produit valide, retourner une erreur
+        if (empty($result['products'])) {
+            return redirect()
+                ->route('inventories.create')
+                ->withErrors(['csv_file' => 'Aucun produit valide trouvé dans le fichier.'])
+                ->withInput();
+        }
+
+        // Créer l'inventaire
+        $inventory = $this->inventoryService->storeInventory(
+            $request->user(),
+            $inventoryDate,
+            $result['products'],
+            $notes,
+            []
+        );
+
+        $message = 'Inventaire importé avec succès.';
+        if (!empty($result['errors'])) {
+            $message .= ' ' . count($result['errors']) . ' erreur(s) rencontrée(s) (voir les logs).';
+        }
+
+        return redirect()
+            ->route('inventories.show', $inventory)
+            ->with('success', $message)
+            ->with('import_errors', $result['errors'] ?? []);
     }
 
     protected function presentProduct(Product $product): array

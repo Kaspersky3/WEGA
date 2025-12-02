@@ -50,6 +50,11 @@ class SupplyController extends Controller
             $product->montant_total_achats += ($product->prix_achat_detail ?? 0) * ($validated['quantite_detail'] ?? 0);
         }
         
+        // Mise à jour du stock actuel (en unités détail)
+        $conversionRate = $product->conversionRate();
+        $stockActuel = ($product->stock_gros ?? 0) * $conversionRate + ($product->stock_detail ?? 0);
+        $product->stock_actuel = $stockActuel;
+        
         $product->save();
 
         return redirect()->route('products.show', $product->id)->with('success', 'Approvisionnement enregistré avec succès !');

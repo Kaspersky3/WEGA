@@ -40,6 +40,9 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
 Route::post('/products', [ProductController::class, 'store'])->name('products.store');
 Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
+Route::put('/products/{id}', [ProductController::class, 'update'])->name('products.update');
+Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
 // Routes approvisionnements
 Route::get('/supplies/create', [SupplyController::class, 'create'])->name('supplies.create');
@@ -50,6 +53,7 @@ Route::get('/api/products/search', [SupplyController::class, 'searchProducts'])-
 Route::get('/inventories', [InventoryController::class, 'index'])->name('inventories.index');
 Route::get('/inventories/create', [InventoryController::class, 'create'])->name('inventories.create');
 Route::post('/inventories', [InventoryController::class, 'store'])->name('inventories.store');
+Route::post('/inventories/import', [InventoryController::class, 'import'])->name('inventories.import');
 Route::get('/inventories/history/export', [InventoryController::class, 'historyExport'])->name('inventories.history.export');
 Route::get('/inventories/{inventory}/export/{format}', [InventoryController::class, 'detailsExport'])
     ->whereIn('format', ['csv', 'xlsx'])

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Http\Requests\ProductUpdateRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -144,5 +146,144 @@ class ProductController extends Controller
         $dernierApprovisionnement = $product->supplies()->latest('date_approvisionnement')->first();
 
         return view('products.show', compact('product', 'margeBeneficiaire', 'dernierApprovisionnement'));
+    }
+
+    // Afficher le formulaire d'édition
+    public function edit($id)
+    {
+        $product = Product::findOrFail($id);
+        return view('products.edit', compact('product'));
+    }
+
+    // Mettre à jour un produit
+    public function update(ProductUpdateRequest $request, $id)
+    {
+        $product = Product::findOrFail($id);
+        $validated = $request->validated();
+
+        // Préparation des données pour la mise à jour
+        $productData = [
+            'categorie' => $validated['categorie'],
+            'libelle' => $validated['libelle'],
+            'type_produit' => $validated['type_produit'],
+            'lieu' => $validated['lieu'],
+            'detail_unit_label' => $validated['detail_unit_label'],
+        ];
+
+        // Unités de mesure
+        if ($request->type_produit === 'Gros' || $request->type_produit === 'Les deux') {
+            $productData['bulk_unit_label'] = $validated['bulk_unit_label'];
+            $productData['units_per_bulk'] = $validated['units_per_bulk'];
+        } else {
+            $productData['bulk_unit_label'] = null;
+            $productData['units_per_bulk'] = null;
+        }
+
+        // Prix et stocks selon le type
+        if ($request->type_produit == 'Gros' || $request->type_produit == 'Les deux') {
+            $productData['prix_achat_gros'] = $validated['prix_achat_gros'];
+            $productData['prix_vente_gros'] = $validated['prix_vente_gros'];
+            $productData['stock_gros'] = $validated['stock_gros'];
+            $productData['prix_achat'] = $validated['prix_achat_gros'];
+            $productData['prix_vente'] = $validated['prix_vente_gros'];
+        } else {
+            $productData['prix_achat_gros'] = null;
+            $productData['prix_vente_gros'] = null;
+            $productData['stock_gros'] = null;
+        }
+
+        if ($request->type_produit == 'Détail' || $request->type_produit == 'Les deux') {
+            $productData['prix_achat_detail'] = $validated['prix_achat_detail'];
+            $productData['prix_vente_detail'] = $validated['prix_vente_detail'];
+            $productData['stock_detail'] = $validated['stock_detail'];
+            
+            if ($request->type_produit == 'Détail') {
+                $productData['prix_achat'] = $validated['prix_achat_detail'];
+                $productData['prix_vente'] = $validated['prix_vente_detail'];
+            }
+        } else {
+            $productData['prix_achat_detail'] = null;
+            $productData['prix_vente_detail'] = null;
+            $productData['stock_detail'] = null;
+        }
+
+        // Calcul du stock actuel (en unités détail)
+        $stockActuel = 0;
+        if ($request->type_produit == 'Gros' || $request->type_produit == 'Les deux') {
+            $stockActuel += ($validated['stock_gros'] ?? 0) * ($productData['units_per_bulk'] ?? 1);
+        }
+        if ($request->type_produit == 'Détail' || $request->type_produit == 'Les deux') {
+            $stockActuel += ($validated['stock_detail'] ?? 0);
+        }
+        $productData['stock_actuel'] = $stockActuel;
+        
+        // Mise à jour du stock initial pour cohérence
+        $productData['stock_initial'] = $stockActuel;
+
+        $product->update($productData);
+
+        return redirect()
+            ->route('products.show', $product)
+            ->with('success', 'Produit modifié avec succès !');
+    }
+
+    // Supprimer un produit
+    public function destroy($id)
+    {
+        $product = Product::findOrFail($id);
+
+        // Vérifier s'il y a des approvisionnements ou ventes associés
+        $hasSupplies = $product->supplies()->exists();
+        $hasSales = $product->sales()->exists();
+
+        if ($hasSupplies || $hasSales) {
+            return redirect()
+                ->route('products.show', $product)
+                ->with('error', 'Impossible de supprimer ce produit car il possède des approvisionnements ou des ventes associés.');
+        }
+
+        $product->delete();
+
+        return redirect()
+            ->route('products.index')
+            ->with('success', 'Produit supprimé avec succès !');
+    }
+
+    // Méthode helper pour préparer les données du produit
+    protected function prepareProductData(array $validated, string $typeProduit): array
+    {
+        $productData = [
+            'categorie' => $validated['categorie'],
+            'libelle' => $validated['libelle'],
+            'type_produit' => $typeProduit,
+            'lieu' => $validated['lieu'],
+            'detail_unit_label' => $validated['detail_unit_label'],
+        ];
+
+        if ($typeProduit === 'Gros' || $typeProduit === 'Les deux') {
+            $productData['bulk_unit_label'] = $validated['bulk_unit_label'];
+            $productData['units_per_bulk'] = $validated['units_per_bulk'];
+        }
+
+        if ($typeProduit == 'Gros' || $typeProduit == 'Les deux') {
+            $productData['prix_achat_gros'] = $validated['prix_achat_gros'];
+            $productData['prix_vente_gros'] = $validated['prix_vente_gros'];
+            $productData['stock_gros'] = $validated['stock_gros'];
+            $productData['prix_achat'] = $validated['prix_achat_gros'];
+            $productData['prix_vente'] = $validated['prix_vente_gros'];
+        }
+
+        if ($typeProduit == 'Détail' || $typeProduit == 'Les deux') {
+            $productData['prix_achat_detail'] = $validated['prix_achat_detail'];
+            $productData['prix_vente_detail'] = $validated['prix_vente_detail'];
+            $productData['stock_detail'] = $validated['stock_detail'];
+            
+            if ($typeProduit == 'Détail') {
+                $productData['prix_achat'] = $validated['prix_achat_detail'];
+                $productData['prix_vente'] = $validated['prix_vente_detail'];
+            }
+        }
+
+        return $productData;
     }
 }

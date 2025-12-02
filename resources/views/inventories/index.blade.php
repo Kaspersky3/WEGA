@@ -1,133 +1,151 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Historique des inventaires</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="p-4 bg-light">
-    <div class="container-fluid">
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-            <div>
-                <p class="text-muted mb-1">Pilotage des stocks</p>
-                <h1 class="h3 mb-0">Historique des inventaires</h1>
-            </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('inventories.create') }}" class="btn btn-primary">Valider un inventaire</a>
-                <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">Produits</a>
-            </div>
+@extends('layouts.app')
+
+@section('title', 'Historique des Inventaires - WEGA')
+
+@section('content')
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="page-title">Historique des Inventaires</h1>
+            <p class="page-subtitle">Consultez l'historique de tous vos inventaires</p>
         </div>
-
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
-            </div>
-        @endif
-
-        <div class="card mb-4">
-            <div class="card-body">
-                <form action="{{ route('inventories.index') }}" method="GET" class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Recherche</label>
-                        <input type="text" class="form-control" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Référence, libellé...">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Statut</label>
-                        <select class="form-select" name="status">
-                            <option value="">Tous</option>
-                            <option value="validated" @selected(($filters['status'] ?? '') === 'validated')>Validé</option>
-                            <option value="draft" @selected(($filters['status'] ?? '') === 'draft')>Brouillon</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Du</label>
-                        <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Au</label>
-                        <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
-                    </div>
-                    <div class="col-md-3 d-flex align-items-end gap-2">
-                        <button type="submit" class="btn btn-primary w-50">Filtrer</button>
-                        <a href="{{ route('inventories.index') }}" class="btn btn-light w-50">Réinitialiser</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-end gap-2 mb-3">
-            <a href="{{ route('inventories.history.export', array_merge($filters, ['format' => 'csv'])) }}" class="btn btn-outline-secondary btn-sm">Exporter CSV</a>
-            <a href="{{ route('inventories.history.export', array_merge($filters, ['format' => 'xlsx'])) }}" class="btn btn-outline-secondary btn-sm">Exporter Excel</a>
-        </div>
-
-        <div class="card shadow-sm">
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                    <thead class="table-light">
-                        @php
-                            $currentSort = $filters['sort'] ?? 'inventory_date';
-                            $currentDirection = $filters['direction'] ?? 'desc';
-                            $sortLink = function (string $column, string $label) use ($filters, $currentSort, $currentDirection) {
-                                $direction = ($currentSort === $column && $currentDirection === 'asc') ? 'desc' : 'asc';
-                                $params = array_merge($filters, ['sort' => $column, 'direction' => $direction]);
-                                $icon = $currentSort === $column ? ($currentDirection === 'asc' ? '↑' : '↓') : '';
-                                $url = route('inventories.index', $params);
-                                return "<a href=\"{$url}\" class=\"text-decoration-none\">{$label} {$icon}</a>";
-                            };
-                        @endphp
-                        <tr>
-                            <th>{!! $sortLink('reference', 'Référence') !!}</th>
-                            <th>{!! $sortLink('inventory_date', 'Date') !!}</th>
-                            <th>Utilisateur</th>
-                            <th>Stock théorique</th>
-                            <th>Stock réel</th>
-                            <th>{!! $sortLink('total_gap_units', 'Écart (unités)') !!}</th>
-                            <th>{!! $sortLink('total_gap_value', 'Valorisation') !!}</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($inventories as $inventory)
-                            <tr>
-                                <td>
-                                    <div class="fw-semibold">{{ $inventory->reference }}</div>
-                                    <small class="text-muted">{{ $inventory->month_name }}</small>
-                                </td>
-                                <td>{{ $inventory->inventory_date?->format('d/m/Y H:i') }}</td>
-                                <td>{{ $inventory->user?->name ?? 'N/A' }}</td>
-                                <td>{{ number_format($inventory->total_stock_theorique, 0, ',', ' ') }}</td>
-                                <td>{{ number_format($inventory->total_stock_reel, 0, ',', ' ') }}</td>
-                                <td class="{{ $inventory->total_gap_units >= 0 ? 'text-danger' : 'text-success' }}">
-                                    {{ number_format($inventory->total_gap_units, 0, ',', ' ') }}
-                                </td>
-                                <td>
-                                    {{ number_format($inventory->total_gap_value, 0, ',', ' ') }} FCFA
-                                </td>
-                                <td class="d-flex gap-2">
-                                    <a href="{{ route('inventories.show', $inventory) }}" class="btn btn-sm btn-outline-primary">Consulter</a>
-                                    <a href="{{ route('inventories.details.export', ['inventory' => $inventory->id, 'format' => 'csv']) }}" class="btn btn-sm btn-outline-secondary">CSV</a>
-                                    <a href="{{ route('inventories.details.export', ['inventory' => $inventory->id, 'format' => 'xlsx']) }}" class="btn btn-sm btn-outline-secondary">Excel</a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-5">
-                                    <p class="mb-2">Aucun inventaire encore enregistré.</p>
-                                    <a href="{{ route('inventories.create') }}" class="btn btn-primary btn-sm">Créer mon premier inventaire</a>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="card-footer">
-                {{ $inventories->links() }}
-            </div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('inventories.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nouvel Inventaire
+            </a>
+            <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-box"></i> Produits
+            </a>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<div class="card mb-4">
+    <div class="card-body">
+        <form action="{{ route('inventories.index') }}" method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Recherche</label>
+                <input type="text" class="form-control" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Référence, libellé...">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Statut</label>
+                <select class="form-select" name="status">
+                    <option value="">Tous</option>
+                    <option value="validated" @selected(($filters['status'] ?? '') === 'validated')>Validé</option>
+                    <option value="draft" @selected(($filters['status'] ?? '') === 'draft')>Brouillon</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Du</label>
+                <input type="date" class="form-control" name="from" value="{{ $filters['from'] ?? '' }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Au</label>
+                <input type="date" class="form-control" name="to" value="{{ $filters['to'] ?? '' }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-fill">
+                    <i class="bi bi-funnel"></i> Filtrer
+                </button>
+                <a href="{{ route('inventories.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <a href="{{ route('inventories.history.export', array_merge($filters, ['format' => 'csv'])) }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-file-earmark-spreadsheet"></i> Exporter CSV
+    </a>
+    <a href="{{ route('inventories.history.export', array_merge($filters, ['format' => 'xlsx'])) }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-file-earmark-excel"></i> Exporter Excel
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    @php
+                        $currentSort = $filters['sort'] ?? 'inventory_date';
+                        $currentDirection = $filters['direction'] ?? 'desc';
+                        $sortLink = function (string $column, string $label) use ($filters, $currentSort, $currentDirection) {
+                            $direction = ($currentSort === $column && $currentDirection === 'asc') ? 'desc' : 'asc';
+                            $params = array_merge($filters, ['sort' => $column, 'direction' => $direction]);
+                            $icon = $currentSort === $column ? ($currentDirection === 'asc' ? '↑' : '↓') : '';
+                            $url = route('inventories.index', $params);
+                            return "<a href=\"{$url}\" class=\"text-decoration-none text-dark\">{$label} {$icon}</a>";
+                        };
+                    @endphp
+                    <tr>
+                        <th>{!! $sortLink('reference', 'Référence') !!}</th>
+                        <th>{!! $sortLink('inventory_date', 'Date') !!}</th>
+                        <th>Utilisateur</th>
+                        <th>Stock théorique</th>
+                        <th>Stock réel</th>
+                        <th>{!! $sortLink('total_gap_units', 'Écart (unités)') !!}</th>
+                        <th>{!! $sortLink('total_gap_value', 'Valorisation') !!}</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($inventories as $inventory)
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ $inventory->reference }}</div>
+                                <small class="text-muted">{{ $inventory->month_name }}</small>
+                            </td>
+                            <td>{{ $inventory->inventory_date?->format('d/m/Y H:i') }}</td>
+                            <td>{{ $inventory->user?->name ?? 'N/A' }}</td>
+                            <td>{{ number_format($inventory->total_stock_theorique, 0, ',', ' ') }}</td>
+                            <td>{{ number_format($inventory->total_stock_reel, 0, ',', ' ') }}</td>
+                            <td>
+                                <span class="badge {{ $inventory->total_gap_units >= 0 ? 'bg-danger' : 'bg-success' }}">
+                                    {{ number_format($inventory->total_gap_units, 0, ',', ' ') }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong>{{ number_format($inventory->total_gap_value, 0, ',', ' ') }} FCFA</strong>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a href="{{ route('inventories.show', $inventory) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Consulter
+                                    </a>
+                                    <a href="{{ route('inventories.details.export', ['inventory' => $inventory->id, 'format' => 'csv']) }}" class="btn btn-sm btn-outline-secondary" title="Exporter CSV">
+                                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                                    </a>
+                                    <a href="{{ route('inventories.details.export', ['inventory' => $inventory->id, 'format' => 'xlsx']) }}" class="btn btn-sm btn-outline-secondary" title="Exporter Excel">
+                                        <i class="bi bi-file-earmark-excel"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <div class="mb-3">
+                                    <i class="bi bi-inbox" style="font-size: 3rem; color: #cbd5e1;"></i>
+                                </div>
+                                <h5 class="text-muted">Aucun inventaire enregistré</h5>
+                                <p class="text-muted mb-4">Commencez par créer votre premier inventaire</p>
+                                <a href="{{ route('inventories.create') }}" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Créer un inventaire
+                                </a>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @if($inventories->hasPages())
+    <div class="card-footer">
+        {{ $inventories->links() }}
+    </div>
+    @endif
+</div>
+@endsection
