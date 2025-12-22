@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->default('user')->after('password');
+            $table->string('role', 20)
+                ->default('user')
+                ->after('password')
+                ->index(); // Index pour améliorer les performances des requêtes par rôle
         });
     }
 
@@ -22,6 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
+            $table->dropIndex(['role']); // Supprimer l'index avant de supprimer la colonne
             $table->dropColumn('role');
         });
     }

@@ -275,6 +275,15 @@
                             <i class="bi bi-graph-up"></i> Analytics
                         </a>
                     </li>
+                    @auth
+                        @if(auth()->user()->isAdmin())
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                                    <i class="bi bi-shield-lock"></i> Administration
+                                </a>
+                            </li>
+                        @endif
+                    @endauth
                 </ul>
                 <div class="d-flex gap-2">
                     @auth

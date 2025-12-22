@@ -10,9 +10,13 @@ class TrustProxies extends Middleware
     /**
      * The trusted proxies for this application.
      *
+     * Pour Sevalla et autres hébergeurs cloud, on fait confiance à tous les proxies
+     * car ils gèrent HTTPS en amont. En production, cela permet de détecter
+     * correctement les requêtes HTTPS via les headers X-Forwarded-*.
+     *
      * @var array<int, string>|string|null
      */
-    protected $proxies;
+    protected $proxies = '*';
 
     /**
      * The headers that should be used to detect proxies.

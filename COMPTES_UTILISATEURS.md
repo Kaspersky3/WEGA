@@ -4,15 +4,17 @@
 
 Après avoir exécuté le seeder, deux comptes utilisateurs sont disponibles :
 
-### 👤 Administrateur
+### 🔐 Administrateur (Première connexion)
 - **Email** : `admin@wega.com`
-- **Mot de passe** : `password`
+- **Mot de passe** : `admin123`
 - **Rôle** : `admin`
+- **Accès** : Toutes les fonctionnalités + gestion des utilisateurs
 
-### 👤 Utilisateur Standard
+### 👤 Utilisateur Standard (Pour tests)
 - **Email** : `user@wega.com`
-- **Mot de passe** : `password`
+- **Mot de passe** : `user123`
 - **Rôle** : `user`
+- **Accès** : Fonctionnalités métier uniquement (produits, inventaires, etc.)
 
 ## 🚀 Création des utilisateurs
 
@@ -41,24 +43,35 @@ docker-compose exec app php artisan db:seed
 L'interface de connexion est accessible à l'adresse : **`/login`**
 
 ### Fonctionnalités disponibles :
+- ✅ **Sélection du type d'utilisateur** : Choisir entre "Administrateur" ou "Utilisateur"
 - ✅ Formulaire de connexion avec email et mot de passe
 - ✅ Case à cocher "Se souvenir de moi"
 - ✅ Lien "Mot de passe oublié"
-- ✅ Lien vers la page d'inscription
 - ✅ Design moderne et responsive
 - ✅ Gestion des erreurs de connexion
+- ✅ Validation du type d'utilisateur (correspondance avec le compte)
+
+### ⚠️ Important
+- **Pas d'inscription publique** : Seuls les administrateurs peuvent créer des comptes utilisateurs
+- **Type d'utilisateur requis** : Vous devez sélectionner le type d'utilisateur lors de la connexion
+- **Vérification automatique** : Le système vérifie que le type sélectionné correspond au compte
 
 ### Après connexion :
 - Redirection automatique vers `/inventories` (liste des inventaires)
 - Session utilisateur créée
-- Accès à toutes les fonctionnalités de l'application
+- Accès aux fonctionnalités selon le rôle
 
-## 📝 Créer un nouveau compte
+## 📝 Créer un nouveau compte utilisateur
 
-Vous pouvez également créer un nouveau compte via l'interface d'inscription :
-- **URL** : `/register`
-- Formulaire d'inscription disponible
-- Création automatique avec le rôle `user`
+**Seuls les administrateurs peuvent créer des comptes utilisateurs.**
+
+Pour créer un nouveau compte :
+1. Se connecter en tant qu'administrateur
+2. Aller dans **Administration** → **Utilisateurs**
+3. Cliquer sur **Nouvel Utilisateur**
+4. Remplir le formulaire et valider
+
+**L'inscription publique (`/register`) a été désactivée pour des raisons de sécurité.**
 
 ## ⚠️ Sécurité
 
