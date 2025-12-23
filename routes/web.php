@@ -4,7 +4,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplyController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\AnalyticsController;
-use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -12,70 +11,59 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\ChangePasswordController;
 use Illuminate\Support\Facades\Route;
 
-// Redirection home vers login si non authentifié, sinon vers inventaires
-Route::get('/', function () {
-    return auth()->check() 
-        ? redirect()->route('inventories.index')
-        : redirect()->route('login');
-})->name('home');
+Route::view('/', 'welcome')->name('home');
 
 // Auth - invités
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 
-    // Route d'inscription supprimée - Seuls les admins peuvent créer des comptes
-    // L'inscription se fait maintenant via /admin/users/create
+    Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
+    Route::post('/register', [RegisteredUserController::class, 'store']);
 
-    // Routes de réinitialisation de mot de passe supprimées
-    // Les administrateurs peuvent réinitialiser les mots de passe via /admin/users/edit
+    Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
+
+    Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.update');
 });
 
-// Routes protégées - Authentification requise
+// Auth - protégées
 Route::middleware('auth')->group(function () {
-    // Auth - actions utilisateur
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::get('/settings/password', [ChangePasswordController::class, 'edit'])->name('password.change.edit');
     Route::put('/settings/password', [ChangePasswordController::class, 'update'])->name('password.change.update');
-
-    // Routes produits - CRUD complet protégé
-    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-    Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
-    Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
-    Route::put('/products/{id}', [ProductController::class, 'update'])->name('products.update');
-    Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
-
-    // Routes approvisionnements - Protégées
-    Route::get('/supplies/create', [SupplyController::class, 'create'])->name('supplies.create');
-    Route::post('/supplies', [SupplyController::class, 'store'])->name('supplies.store');
-    Route::get('/api/products/search', [SupplyController::class, 'searchProducts'])->name('api.products.search');
-
-    // Routes inventaires - Protégées
-    Route::get('/inventories', [InventoryController::class, 'index'])->name('inventories.index');
-    Route::get('/inventories/create', [InventoryController::class, 'create'])->name('inventories.create');
-    Route::post('/inventories', [InventoryController::class, 'store'])->name('inventories.store');
-    Route::post('/inventories/import', [InventoryController::class, 'import'])->name('inventories.import');
-    Route::get('/inventories/history/export', [InventoryController::class, 'historyExport'])->name('inventories.history.export');
-    Route::get('/inventories/{inventory}/export/{format}', [InventoryController::class, 'detailsExport'])
-        ->whereIn('format', ['csv', 'xlsx'])
-        ->name('inventories.details.export');
-    Route::get('/inventories/{inventory}', [InventoryController::class, 'show'])->name('inventories.show');
-
-    // Analytics - Protégées
-    Route::get('/analytics', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
-    Route::get('/analytics/data', [AnalyticsController::class, 'data'])->name('analytics.data');
-    Route::get('/analytics/export/{type}/{format}', [AnalyticsController::class, 'export'])
-        ->whereIn('type', ['top-selling', 'top-profitable'])
-        ->whereIn('format', ['csv', 'xlsx'])
-        ->name('analytics.export');
-
-    // Routes Admin - Gestion des utilisateurs (Admin uniquement)
-    // Protection par middleware 'auth' + 'admin' + Policies
-    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-        // Routes de gestion des utilisateurs
-        Route::resource('users', AdminUserController::class)->except(['show']);
-        Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
-    });
 });
+
+// Routes produits
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
+Route::put('/products/{id}', [ProductController::class, 'update'])->name('products.update');
+Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+// Routes approvisionnements
+Route::get('/supplies/create', [SupplyController::class, 'create'])->name('supplies.create');
+Route::post('/supplies', [SupplyController::class, 'store'])->name('supplies.store');
+Route::get('/api/products/search', [SupplyController::class, 'searchProducts'])->name('api.products.search');
+
+// Routes inventaires
+Route::get('/inventories', [InventoryController::class, 'index'])->name('inventories.index');
+Route::get('/inventories/create', [InventoryController::class, 'create'])->name('inventories.create');
+Route::post('/inventories', [InventoryController::class, 'store'])->name('inventories.store');
+Route::post('/inventories/import', [InventoryController::class, 'import'])->name('inventories.import');
+Route::get('/inventories/history/export', [InventoryController::class, 'historyExport'])->name('inventories.history.export');
+Route::get('/inventories/{inventory}/export/{format}', [InventoryController::class, 'detailsExport'])
+    ->whereIn('format', ['csv', 'xlsx'])
+    ->name('inventories.details.export');
+Route::get('/inventories/{inventory}', [InventoryController::class, 'show'])->name('inventories.show');
+
+// Analytics
+Route::get('/analytics', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
+Route::get('/analytics/data', [AnalyticsController::class, 'data'])->name('analytics.data');
+Route::get('/analytics/export/{type}/{format}', [AnalyticsController::class, 'export'])
+    ->whereIn('type', ['top-selling', 'top-profitable'])
+    ->whereIn('format', ['csv', 'xlsx'])
+    ->name('analytics.export');
