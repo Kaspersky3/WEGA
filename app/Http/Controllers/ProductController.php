@@ -230,23 +230,22 @@ class ProductController extends Controller
     // Supprimer un produit
     public function destroy($id)
     {
-        $product = Product::findOrFail($id);
-
-        // Vérifier s'il y a des approvisionnements ou ventes associés
-        $hasSupplies = $product->supplies()->exists();
-        $hasSales = $product->sales()->exists();
-
-        if ($hasSupplies || $hasSales) {
+        // Vérifier que l'utilisateur est administrateur
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect()
-                ->route('products.show', $product)
-                ->with('error', 'Impossible de supprimer ce produit car il possède des approvisionnements ou des ventes associés.');
+                ->route('products.index')
+                ->with('error', 'Accès refusé. Seuls les administrateurs peuvent supprimer des produits.');
         }
 
+        $product = Product::findOrFail($id);
+
+        // Les administrateurs peuvent supprimer un produit même s'il possède des approvisionnements ou ventes
+        // La suppression en cascade est gérée automatiquement par la base de données (onDelete('cascade'))
         $product->delete();
 
         return redirect()
             ->route('products.index')
-            ->with('success', 'Produit supprimé avec succès !');
+            ->with('success', 'Produit supprimé avec succès ! Les approvisionnements et ventes associés ont également été supprimés.');
     }
 
     // Méthode helper pour préparer les données du produit

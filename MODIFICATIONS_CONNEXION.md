@@ -182,3 +182,4 @@ L'interface de connexion a été modifiée pour améliorer la sécurité et le c
 **Date de modification** : 2025-01-XX
 **Statut** : ✅ Implémenté et testé
 
+

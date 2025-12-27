@@ -197,3 +197,4 @@ php artisan migrate:fresh --seed
 **Date de correction** : 2025-01-XX
 **Statut** : ✅ Problèmes résolus
 
+

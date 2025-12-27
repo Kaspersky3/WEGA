@@ -68,6 +68,50 @@
             color: white;
         }
 
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            background: var(--light);
+            margin-right: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text);
+            line-height: 1.2;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: capitalize;
+            line-height: 1.2;
+        }
+
         .btn {
             font-weight: 500;
             border-radius: 0.5rem;
@@ -240,6 +284,20 @@
             .main-content {
                 padding: 1rem 0;
             }
+
+            .user-info {
+                padding: 0.375rem 0.75rem;
+            }
+
+            .user-details {
+                display: none;
+            }
+
+            .user-avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 0.75rem;
+            }
         }
     </style>
     @stack('styles')
@@ -285,8 +343,17 @@
                         @endif
                     @endauth
                 </ul>
-                <div class="d-flex gap-2">
+                <div class="d-flex align-items-center gap-2">
                     @auth
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
+                            <div class="user-details">
+                                <div class="user-name">{{ auth()->user()->name }}</div>
+                                <div class="user-role">{{ ucfirst(auth()->user()->role ?? 'user') }}</div>
+                            </div>
+                        </div>
                         <a href="{{ route('logout') }}" class="btn btn-outline-secondary btn-sm" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="bi bi-box-arrow-right"></i> Déconnexion
                         </a>

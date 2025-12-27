@@ -43,13 +43,17 @@
             <a href="{{ route('products.edit', $product) }}" class="btn btn-primary">
                 <i class="bi bi-pencil"></i> Modifier
             </a>
-            <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger">
-                    <i class="bi bi-trash"></i> Supprimer
-                </button>
-            </form>
+            @auth
+                @if(auth()->user()->isAdmin())
+                <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ? Cette action supprimera également tous les approvisionnements et ventes associés. Cette action est irréversible.');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Supprimer
+                    </button>
+                </form>
+                @endif
+            @endauth
             <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Retour
             </a>
@@ -100,19 +104,24 @@
         <div class="info-card">
             <div class="info-card-header">Stocks Actuels</div>
             <table class="table table-borderless mb-0">
-                @if($product->type_produit == 'Gros' || $product->type_produit == 'Les deux')
+                @php
+                    $hasStockGros = ($product->stock_gros ?? 0) > 0 || ($product->type_produit == 'Gros' || $product->type_produit == 'Les deux');
+                    $hasStockDetail = ($product->stock_detail ?? 0) > 0 || ($product->type_produit == 'Détail' || $product->type_produit == 'Les deux');
+                    $hasBothStocks = $hasStockGros && $hasStockDetail;
+                @endphp
+                @if($hasStockGros)
                 <tr>
                     <td class="text-muted" style="width: 50%;">Stock Gros</td>
                     <td><span class="badge bg-primary stat-badge">{{ number_format($product->stock_gros ?? 0, 0, ',', ' ') }}</span></td>
                 </tr>
                 @endif
-                @if($product->type_produit == 'Détail' || $product->type_produit == 'Les deux')
+                @if($hasStockDetail)
                 <tr>
                     <td class="text-muted">Stock Détail</td>
                     <td><span class="badge bg-success stat-badge">{{ number_format($product->stock_detail ?? 0, 0, ',', ' ') }}</span></td>
                 </tr>
                 @endif
-                @if($product->type_produit == 'Les deux')
+                @if($hasBothStocks)
                 <tr>
                     <td class="text-muted"><strong>Stock Total</strong></td>
                     <td><strong class="stat-badge">{{ number_format(($product->stock_gros ?? 0) + ($product->stock_detail ?? 0), 0, ',', ' ') }}</strong></td>

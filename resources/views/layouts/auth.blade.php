@@ -6,157 +6,288 @@
     <title>{{ $title ?? 'WEGA Auth' }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        /* Variables du design system WEGA */
         :root {
-            --primary: #7551FF;
-            --secondary: #FF6E7F;
-            --dark: #0f172a;
-            --glass: rgba(15, 23, 42, 0.72);
+            --primary: #4F46E5;
+            --primary-dark: #4338CA;
+            --primary-light: #6366F1;
+            --primary-50: #EEF2FF;
+            --success: #10B981;
+            --success-bg: #D1FAE5;
+            --success-text: #065F46;
+            --danger: #EF4444;
+            --danger-bg: #FEE2E2;
+            --danger-text: #991B1B;
+            --warning: #F59E0B;
+            --warning-bg: #FEF3C7;
+            --warning-text: #92400E;
+            --info: #3B82F6;
+            --info-bg: #DBEAFE;
+            --info-text: #1E40AF;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8FAFC;
+            --bg-tertiary: #F1F5F9;
+            --border: #E2E8F0;
+            --border-dark: #CBD5E1;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-muted: #64748B;
+            --text-inverse: #FFFFFF;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-        * { box-sizing: border-box; }
+        * { 
+            box-sizing: border-box; 
+        }
         body {
             margin: 0;
-            font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            background: radial-gradient(circle at 10% 20%, #1e1b4b 0%, #020617 55%);
-            color: #e2e8f0;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            color: var(--text-primary);
             display: flex;
-            align-items: stretch;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
         }
         .auth-page {
-            flex: 1;
+            width: 100%;
+            max-width: 1200px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
         }
         .auth-hero {
-            padding: clamp(2rem, 5vw, 4rem);
+            padding: 2rem;
             position: relative;
-            overflow: hidden;
-        }
-        .auth-hero::after {
-            content: '';
-            position: absolute;
-            inset: 20% auto auto 40%;
-            width: 320px;
-            height: 320px;
-            background: radial-gradient(circle, rgba(255,110,127,0.4), transparent 70%);
-            filter: blur(40px);
-            z-index: 0;
         }
         .auth-hero-content {
-            position: relative;
-            z-index: 1;
-            max-width: 540px;
+            max-width: 500px;
+        }
+        .auth-hero-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--primary);
+            background: var(--primary-50);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 2rem;
         }
         .auth-hero h1 {
-            font-size: clamp(2.2rem, 4vw, 3.2rem);
-            margin-bottom: 1rem;
-            color: #f8fafc;
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
         }
         .auth-hero p {
-            color: #cbd5f5;
-            line-height: 1.6;
-            font-size: 1.05rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 1.125rem;
+            margin-bottom: 0;
         }
         .auth-card-wrapper {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: clamp(2rem, 5vw, 4rem);
-            background: rgba(15, 23, 42, 0.78);
-            backdrop-filter: blur(24px);
+            padding: 2rem;
         }
         .auth-card {
-            width: min(420px, 100%);
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            border-radius: 28px;
-            padding: clamp(2rem, 3vw, 3rem);
-            box-shadow: 0 20px 70px rgba(0,0,0,0.55);
+            width: 100%;
+            max-width: 440px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-xl);
+        }
+        .auth-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+        .auth-card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-lg);
+            background: var(--primary-50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+        .auth-card-icon i {
+            font-size: 1.75rem;
+        }
+        .auth-card-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: block;
         }
         .auth-card h2 {
             margin: 0 0 0.5rem;
-            font-size: 2rem;
-            color: #f1f5f9;
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
         }
         .auth-card .subtitle {
-            color: #94a3b8;
-            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 0;
         }
         .form-control {
             width: 100%;
-            padding: 0.95rem 1.1rem;
-            border-radius: 14px;
-            background: rgba(15,23,42,0.6);
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            color: #f8fafc;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
             font-size: 1rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .form-control:hover {
+            border-color: var(--border-dark);
         }
         .form-control:focus {
             outline: none;
-            border-color: rgba(117,81,255,0.8);
-            box-shadow: 0 0 0 3px rgba(117,81,255,0.3);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        .form-control::placeholder {
+            color: var(--text-muted);
         }
         label {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #cbd5f5;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
         }
         .btn-primary {
-            background: linear-gradient(120deg, var(--primary), var(--secondary));
+            background: var(--primary);
             border: none;
-            color: #fff;
+            color: var(--text-inverse);
             font-weight: 600;
-            padding: 0.95rem 1.4rem;
-            border-radius: 16px;
+            padding: 0.875rem 1.5rem;
+            border-radius: var(--radius-md);
             width: 100%;
             cursor: pointer;
-            font-size: 1.05rem;
-            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
         }
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(117,81,255,0.35);
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
         }
         .form-footer {
             margin-top: 1.5rem;
-            font-size: 0.95rem;
-            color: #cbd5f5;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
             text-align: center;
         }
         .form-footer a {
-            color: #fff;
+            color: var(--primary);
             font-weight: 600;
             text-decoration: none;
         }
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
         .alert {
-            padding: 0.9rem 1rem;
-            border-radius: 14px;
-            margin-bottom: 1rem;
-            font-size: 0.95rem;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            font-size: 0.9375rem;
+            border: 1px solid;
         }
         .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            color: #bbf7d0;
-            border: 1px solid rgba(34,197,94,0.2);
+            background: var(--success-bg);
+            color: var(--success-text);
+            border-color: var(--success);
         }
-        .alert-error {
-            background: rgba(248, 113, 113, 0.1);
-            color: #fecdd3;
-            border: 1px solid rgba(248, 113, 113, 0.3);
+        .alert-error, .alert-danger {
+            background: var(--danger-bg);
+            color: var(--danger-text);
+            border-color: var(--danger);
+        }
+        .alert ul {
+            margin: 0.5rem 0 0 1.25rem;
+            padding: 0;
         }
         .invalid-feedback {
-            color: #fecaca;
-            font-size: 0.85rem;
-            margin-top: 0.35rem;
+            color: var(--danger);
+            font-size: 0.875rem;
+            margin-top: 0.375rem;
+            font-weight: 500;
         }
-        @media (max-width: 900px) {
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .form-check input[type="checkbox"] {
+            width: 1.125rem;
+            height: 1.125rem;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+        .form-check label {
+            margin-bottom: 0;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        @media (max-width: 968px) {
             .auth-page {
                 grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .auth-hero {
+                text-align: center;
+                padding: 1rem;
+            }
+            .auth-hero h1 {
+                font-size: 2rem;
+            }
+            .auth-card {
+                padding: 2rem;
+            }
+        }
+        @media (max-width: 640px) {
+            body {
+                padding: 0.5rem;
+            }
+            .auth-card {
+                padding: 1.5rem;
+                border-radius: var(--radius-lg);
+            }
+            .auth-card h2 {
+                font-size: 1.5rem;
             }
             .auth-hero {
                 display: none;
@@ -168,21 +299,21 @@
     <div class="auth-page">
         <section class="auth-hero">
             <div class="auth-hero-content">
-                <p style="letter-spacing: .2em; text-transform: uppercase; font-weight: 600; color: rgba(255,255,255,0.6);">WEGA PLATFORM</p>
+                <span class="auth-hero-badge">WEGA Platform</span>
                 <h1>{{ $heroTitle ?? 'Pilotez votre performance avec élégance' }}</h1>
                 <p>{{ $heroSubtitle ?? "Une expérience d'identification pensée pour des équipes ambitieuses : sécurité maximale, fluidité, et un soin particulier porté au design." }}</p>
             </div>
         </section>
         <section class="auth-card-wrapper">
             <div class="auth-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <div class="auth-card-header">
                     <div>
-                        <span style="font-size:0.85rem; text-transform:uppercase; letter-spacing:.2em; color:#94a3b8;">{{ $badge ?? 'WEGA AUTH' }}</span>
+                        <span class="auth-card-badge">{{ $badge ?? 'WEGA AUTH' }}</span>
                         <h2>{{ $title ?? 'Connexion' }}</h2>
                         <p class="subtitle">{{ $subtitle ?? 'Rejoignez votre espace sécurisé' }}</p>
                     </div>
-                    <div style="width:48px;height:48px;border-radius:14px;background:rgba(117,81,255,0.15);display:flex;align-items:center;justify-content:center;color:#fff;">
-                        <i class="{{ $icon ?? 'bi bi-shield-lock' }}" style="font-size:1.4rem;"></i>
+                    <div class="auth-card-icon">
+                        <i class="{{ $icon ?? 'bi bi-shield-lock' }}"></i>
                     </div>
                 </div>
                 @if (session('status'))

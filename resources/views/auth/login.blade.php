@@ -8,10 +8,10 @@
 @extends('layouts.auth')
 
 @section('content')
-    <form method="POST" action="{{ route('login') }}" style="display:flex; flex-direction:column; gap:1.25rem;">
+    <form method="POST" action="{{ route('login') }}" style="display:flex; flex-direction:column; gap:1.5rem;">
         @csrf
         <div>
-            <label for="user_type">Type d'utilisateur <span style="color:#fecaca;">*</span></label>
+            <label for="user_type">Type d'utilisateur <span style="color:var(--danger);">*</span></label>
             <select id="user_type" name="user_type" required class="form-control" style="cursor:pointer;">
                 <option value="">Sélectionnez un type</option>
                 <option value="admin" {{ old('user_type') === 'admin' ? 'selected' : '' }}>Administrateur</option>
@@ -35,17 +35,15 @@
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
-        <div style="display:flex; justify-content:flex-start; align-items:center;">
-            <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; color:#cbd5f5;">
-                <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }} style="accent-color:#7551FF;">
-                Se souvenir de moi
-            </label>
+        <div class="form-check">
+            <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+            <label for="remember">Se souvenir de moi</label>
         </div>
         <button type="submit" class="btn-primary">
             Se connecter
         </button>
-        <div class="form-footer" style="margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(148,163,184,0.2);">
-            <small style="color:#94a3b8;">
+        <div class="form-footer" style="margin-top:1rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+            <small>
                 <i class="bi bi-info-circle"></i> Seuls les administrateurs peuvent créer des comptes utilisateurs.
             </small>
         </div>

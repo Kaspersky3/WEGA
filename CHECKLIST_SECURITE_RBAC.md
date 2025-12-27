@@ -267,3 +267,4 @@ User::create([
 **Version Laravel** : 10.x
 **Statut** : ✅ Prêt pour production (après validation de la checklist)
 
+
