@@ -51,7 +51,7 @@ class ProductController extends Controller
             'categorie' => 'required|string|max:255',
             'libelle' => 'required|string|max:255',
             'type_produit' => 'required|in:Gros,Détail,Les deux',
-            'lieu' => 'required|in:Stock,Boutique',
+            'lieu' => 'required|in:Stock,Boutique 1,Boutique 2',
             'detail_unit_label' => 'required|string|max:50',
         ];
 

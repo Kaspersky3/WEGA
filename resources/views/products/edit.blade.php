@@ -86,7 +86,8 @@
                         <select class="form-select @error('lieu') is-invalid @enderror" id="lieu" name="lieu" required>
                             <option value="">Sélectionnez un lieu</option>
                             <option value="Stock" {{ old('lieu', $product->lieu) == 'Stock' ? 'selected' : '' }}>Stock</option>
-                            <option value="Boutique" {{ old('lieu', $product->lieu) == 'Boutique' ? 'selected' : '' }}>Boutique</option>
+                            <option value="Boutique 1" {{ old('lieu', $product->lieu) == 'Boutique 1' ? 'selected' : '' }}>Boutique 1</option>
+                            <option value="Boutique 2" {{ old('lieu', $product->lieu) == 'Boutique 2' ? 'selected' : '' }}>Boutique 2</option>
                         </select>
                         @error('lieu')
                             <div class="invalid-feedback">{{ $message }}</div>

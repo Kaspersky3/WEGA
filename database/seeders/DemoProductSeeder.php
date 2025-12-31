@@ -21,7 +21,7 @@ class DemoProductSeeder extends Seeder
 
                 return array_merge([
                     'type_produit' => $type,
-                    'lieu' => fake()->randomElement(['Stock', 'Boutique']),
+                    'lieu' => fake()->randomElement(['Stock', 'Boutique 1', 'Boutique 2']),
                     'categorie' => fake()->randomElement([
                         'Vin & Boissons',
                         'Produits Alimentaires',

@@ -653,3 +653,4 @@ $iconClass = $iconMap[$type] ?? 'bi-info-circle-fill';
 
 **Ces exemples sont prêts à être utilisés dans votre application !** 🚀
 
+

@@ -243,3 +243,4 @@ Une fois les Quick Wins implémentés :
 **Impact utilisateur : Élevé**  
 **Difficulté : Faible à Moyenne**
 
+

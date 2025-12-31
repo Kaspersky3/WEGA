@@ -1139,3 +1139,4 @@ L'application WEGA possède une base solide mais nécessite une standardisation 
 **Date :** 2025-01-XX  
 **Version :** 1.0
 
+
