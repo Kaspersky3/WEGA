@@ -16,6 +16,7 @@ class InventoryStoreRequest extends FormRequest
     {
         return [
             'inventory_date' => ['required', 'date'],
+            'lieu' => ['required', 'in:Stock,Boutique 1,Boutique 2'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'filters.categorie' => ['nullable', 'string', 'max:255'],
             'filters.search' => ['nullable', 'string', 'max:255'],

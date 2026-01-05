@@ -13,6 +13,9 @@
             <a href="{{ route('inventories.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-clipboard-check"></i> Inventaires
             </a>
+            <a href="{{ route('transfers.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left-right"></i> Transferts
+            </a>
             <a href="{{ route('supplies.create') }}" class="btn btn-success">
                 <i class="bi bi-cart-plus"></i> Approvisionnement
             </a>

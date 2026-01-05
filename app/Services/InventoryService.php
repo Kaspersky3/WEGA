@@ -21,6 +21,11 @@ class InventoryService
     {
         $query = Product::query();
 
+        // Filtrage obligatoire par lieu - un inventaire ne peut concerner qu'un seul lieu
+        $query->when(Arr::get($filters, 'lieu'), function ($q, $lieu) {
+            $q->where('lieu', $lieu);
+        });
+
         $query->when(Arr::get($filters, 'categorie'), function ($q, $categorie) {
             $q->where('categorie', $categorie);
         });
@@ -44,17 +49,32 @@ class InventoryService
      *
      * @param array<int, array<string, mixed>> $lines
      */
-    public function storeInventory(?User $user, Carbon $inventoryDate, array $lines, ?string $notes = null, array $filters = []): Inventory
+    public function storeInventory(?User $user, Carbon $inventoryDate, array $lines, ?string $notes = null, array $filters = [], ?string $lieu = null): Inventory
     {
         $productIds = collect($lines)->pluck('product_id')->unique()->all();
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
 
-        return DB::transaction(function () use ($user, $inventoryDate, $lines, $products, $notes, $filters) {
+        // Valider que tous les produits appartiennent au même lieu
+        if ($lieu) {
+            $lieux = $products->pluck('lieu')->unique()->filter();
+            if ($lieux->count() > 1 || ($lieux->count() === 1 && $lieux->first() !== $lieu)) {
+                throw new \InvalidArgumentException('Tous les produits doivent appartenir au même lieu : ' . $lieu);
+            }
+            
+            // Vérifier que tous les produits appartiennent au lieu spécifié
+            $invalidProducts = $products->filter(fn ($product) => $product->lieu !== $lieu);
+            if ($invalidProducts->isNotEmpty()) {
+                throw new \InvalidArgumentException('Certains produits n\'appartiennent pas au lieu spécifié : ' . $lieu);
+            }
+        }
+
+        return DB::transaction(function () use ($user, $inventoryDate, $lines, $products, $notes, $filters, $lieu) {
             $inventory = Inventory::create([
                 'reference' => $this->generateReference($inventoryDate),
                 'user_id' => $user?->id,
                 'inventory_date' => $inventoryDate,
                 'status' => 'validated',
+                'lieu' => $lieu,
                 'year' => $inventoryDate->year,
                 'month' => $inventoryDate->month,
                 'month_name' => ucfirst($inventoryDate->locale('fr')->isoFormat('MMMM YYYY')),

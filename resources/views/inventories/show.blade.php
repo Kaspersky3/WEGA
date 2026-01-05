@@ -34,15 +34,15 @@
         <div>
             <h1 class="page-title">{{ $inventory->reference }}</h1>
             <p class="page-subtitle">
-                {{ $inventory->month_name }} · Réalisé le {{ $inventory->inventory_date?->format('d/m/Y H:i') }} par {{ $inventory->user?->name ?? 'N/A' }}
+                {{ $inventory->month_name }} · Lieu: <span class="badge bg-light text-dark">{{ $inventory->lieu ?? 'N/A' }}</span> · Réalisé le {{ $inventory->inventory_date?->format('d/m/Y H:i') }} par {{ $inventory->user?->name ?? 'N/A' }}
             </p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('inventories.details.export', ['inventory' => $inventory->id, 'format' => 'csv']) }}" class="btn btn-outline-secondary">
-                <i class="bi bi-file-earmark-spreadsheet"></i> CSV
-            </a>
             <a href="{{ route('inventories.details.export', ['inventory' => $inventory->id, 'format' => 'xlsx']) }}" class="btn btn-outline-secondary">
                 <i class="bi bi-file-earmark-excel"></i> Excel
+            </a>
+            <a href="{{ route('inventories.details.export', ['inventory' => $inventory->id, 'format' => 'pdf']) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
             </a>
             <a href="{{ route('inventories.index') }}" class="btn btn-primary">
                 <i class="bi bi-arrow-left"></i> Retour

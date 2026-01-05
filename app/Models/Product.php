@@ -84,6 +84,11 @@ class Product extends Model
         return $this->hasMany(Sale::class);
     }
 
+    public function transfers()
+    {
+        return $this->hasMany(Transfer::class);
+    }
+
     // Méthodes utilitaires
     public function getLastSupplyDateAttribute()
     {

@@ -12,14 +12,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Pour MySQL/MariaDB, on doit utiliser ALTER TABLE pour modifier l'enum
-        // On remplace l'ancien enum par le nouveau avec les trois options
-        DB::statement("ALTER TABLE products MODIFY COLUMN lieu ENUM('Stock', 'Boutique 1', 'Boutique 2') DEFAULT 'Stock'");
+        // ÉTAPE 1: Modifier temporairement l'enum pour inclure toutes les valeurs possibles
+        // Cela permet de modifier les données existantes sans erreur
+        DB::statement("ALTER TABLE products MODIFY COLUMN lieu ENUM('Stock', 'Boutique', 'Boutique 1', 'Boutique 2') DEFAULT 'Stock'");
         
-        // Mettre à jour les anciennes valeurs "Boutique" en "Boutique 1"
+        // ÉTAPE 2: Mettre à jour les anciennes valeurs "Boutique" en "Boutique 1"
         DB::table('products')
             ->where('lieu', 'Boutique')
             ->update(['lieu' => 'Boutique 1']);
+        
+        // ÉTAPE 3: Maintenant on peut modifier l'enum pour ne garder que les nouvelles valeurs
+        DB::statement("ALTER TABLE products MODIFY COLUMN lieu ENUM('Stock', 'Boutique 1', 'Boutique 2') DEFAULT 'Stock'");
     }
 
     /**

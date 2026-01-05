@@ -78,7 +78,19 @@
         <form action="{{ route('inventories.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
             @csrf
             <div class="row g-3 align-items-end">
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Lieu <span class="text-danger">*</span></label>
+                    <select class="form-select @error('lieu') is-invalid @enderror" name="lieu" required>
+                        <option value="">Sélectionnez un lieu</option>
+                        <option value="Stock" {{ old('lieu') == 'Stock' ? 'selected' : '' }}>Stock</option>
+                        <option value="Boutique 1" {{ old('lieu') == 'Boutique 1' ? 'selected' : '' }}>Boutique 1</option>
+                        <option value="Boutique 2" {{ old('lieu') == 'Boutique 2' ? 'selected' : '' }}>Boutique 2</option>
+                    </select>
+                    @error('lieu')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-3">
                     <label class="form-label fw-semibold">Fichier CSV/Excel</label>
                     <input type="file" name="csv_file" class="form-control" accept=".csv,.txt,.xlsx" required>
                     <small class="form-text text-muted mt-1 d-block">
@@ -86,11 +98,11 @@
                         Ou format d'export complet avec en-têtes
                     </small>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label fw-semibold">Date d'inventaire</label>
                     <input type="date" name="inventory_date" class="form-control" value="{{ old('inventory_date', now()->toDateString()) }}" required>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label fw-semibold">Notes</label>
                     <textarea name="notes" rows="1" class="form-control" placeholder="Observations...">{{ old('notes') }}</textarea>
                 </div>
@@ -107,7 +119,19 @@
 <div class="card mb-4">
     <div class="card-body">
         <form action="{{ route('inventories.create') }}" method="GET" class="row g-3">
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Lieu <span class="text-danger">*</span></label>
+                <select class="form-select @error('lieu') is-invalid @enderror" name="lieu" required>
+                    <option value="">Sélectionnez un lieu</option>
+                    <option value="Stock" @selected(($filters['lieu'] ?? null) === 'Stock')>Stock</option>
+                    <option value="Boutique 1" @selected(($filters['lieu'] ?? null) === 'Boutique 1')>Boutique 1</option>
+                    <option value="Boutique 2" @selected(($filters['lieu'] ?? null) === 'Boutique 2')>Boutique 2</option>
+                </select>
+                @error('lieu')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+            <div class="col-md-2">
                 <label class="form-label fw-semibold">Catégorie</label>
                 <select class="form-select" name="categorie">
                     <option value="">Toutes les catégories</option>
@@ -120,7 +144,7 @@
                 <label class="form-label fw-semibold">Nom / Référence</label>
                 <input type="text" class="form-control" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Rechercher...">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label fw-semibold">Code produit</label>
                 <input type="text" class="form-control" name="reference" value="{{ $filters['reference'] ?? '' }}" placeholder="P001...">
             </div>
@@ -136,6 +160,12 @@
     </div>
 </div>
 
+@if(isset($requireLieu) && $requireLieu)
+<div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle"></i> <strong>Important :</strong> Veuillez sélectionner un lieu pour commencer l'inventaire. Un inventaire ne peut concerner qu'un seul lieu à la fois.
+</div>
+@endif
+
 <form action="{{ route('inventories.store') }}" method="POST" id="inventoryForm">
     @csrf
     <input type="hidden" name="filters[categorie]" value="{{ $filters['categorie'] ?? '' }}">
@@ -143,11 +173,23 @@
     <input type="hidden" name="filters[reference]" value="{{ $filters['reference'] ?? '' }}">
 
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">Lieu <span class="text-danger">*</span></label>
+            <select class="form-select @error('lieu') is-invalid @enderror" name="lieu" required>
+                <option value="">Sélectionnez un lieu</option>
+                <option value="Stock" @selected(old('lieu', $filters['lieu'] ?? '') === 'Stock')>Stock</option>
+                <option value="Boutique 1" @selected(old('lieu', $filters['lieu'] ?? '') === 'Boutique 1')>Boutique 1</option>
+                <option value="Boutique 2" @selected(old('lieu', $filters['lieu'] ?? '') === 'Boutique 2')>Boutique 2</option>
+            </select>
+            @error('lieu')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+        <div class="col-md-2">
             <label class="form-label fw-semibold">Date d'inventaire</label>
             <input type="date" name="inventory_date" class="form-control" value="{{ old('inventory_date', $inventoryDate) }}" required>
         </div>
-        <div class="col-md-9">
+        <div class="col-md-8">
             <label class="form-label fw-semibold">Notes</label>
             <textarea name="notes" rows="1" class="form-control" placeholder="Observations, incidents...">{{ old('notes') }}</textarea>
         </div>

@@ -29,7 +29,7 @@ class InventoryController extends Controller
             $this->authorize('viewAny', Inventory::class);
         }
 
-        $filters = $request->only(['search', 'status', 'from', 'to', 'sort', 'direction']);
+        $filters = $request->only(['search', 'status', 'lieu', 'from', 'to', 'sort', 'direction']);
 
         $sort = Arr::get($filters, 'sort', 'inventory_date');
         $direction = Arr::get($filters, 'direction', 'desc');
@@ -75,7 +75,19 @@ class InventoryController extends Controller
             $this->authorize('create', Inventory::class);
         }
 
-        $filters = $request->only(['categorie', 'search', 'reference']);
+        $filters = $request->only(['categorie', 'search', 'reference', 'lieu']);
+        
+        // Le lieu est obligatoire pour créer un inventaire
+        if (!Arr::get($filters, 'lieu')) {
+            return view('inventories.create', [
+                'products' => collect(),
+                'filters' => $filters,
+                'inventoryDate' => now()->toDateString(),
+                'theoreticalTotal' => 0,
+                'requireLieu' => true,
+            ]);
+        }
+
         $products = $this->inventoryService->getProductsSnapshot($filters);
 
         $rows = $products->values()->map(fn (Product $product) => $this->presentProduct($product));
@@ -86,6 +98,7 @@ class InventoryController extends Controller
             'filters' => $filters,
             'inventoryDate' => now()->toDateString(),
             'theoreticalTotal' => $theoreticalTotal,
+            'requireLieu' => false,
         ]);
     }
 
@@ -100,7 +113,8 @@ class InventoryController extends Controller
             $inventoryDate,
             array_values($data['products']),
             Arr::get($data, 'notes'),
-            Arr::get($data, 'filters', [])
+            Arr::get($data, 'filters', []),
+            Arr::get($data, 'lieu')
         );
 
         return redirect()
@@ -125,8 +139,8 @@ class InventoryController extends Controller
             $this->authorize('export', Inventory::class);
         }
 
-        $format = $request->get('format', 'csv');
-        $filters = $request->only(['search', 'status', 'from', 'to']);
+        $format = $request->get('format', 'xlsx');
+        $filters = $request->only(['search', 'status', 'lieu', 'from', 'to']);
 
         $query = Inventory::with('user')->orderByDesc('inventory_date');
 
@@ -135,6 +149,10 @@ class InventoryController extends Controller
                 $q->where('reference', 'like', "%{$search}%")
                     ->orWhere('month_name', 'like', "%{$search}%");
             });
+        }
+
+        if ($lieu = Arr::get($filters, 'lieu')) {
+            $query->where('lieu', $lieu);
         }
 
         if ($status = Arr::get($filters, 'status')) {
@@ -154,6 +172,7 @@ class InventoryController extends Controller
         $header = [
             'Référence',
             'Date',
+            'Lieu',
             'Utilisateur',
             'Stock théorique',
             'Stock réel',
@@ -165,6 +184,7 @@ class InventoryController extends Controller
             return [
                 $inventory->reference,
                 optional($inventory->inventory_date)->format('d/m/Y H:i'),
+                $inventory->lieu ?? 'N/A',
                 $inventory->user?->name,
                 $inventory->total_stock_theorique,
                 $inventory->total_stock_reel,
@@ -228,6 +248,14 @@ class InventoryController extends Controller
         $file = $request->file('csv_file');
         $inventoryDate = Carbon::parse($request->inventory_date)->startOfDay();
         $notes = $request->notes;
+        $lieu = $request->lieu;
+
+        if (!$lieu) {
+            return redirect()
+                ->route('inventories.create')
+                ->withErrors(['lieu' => 'Le lieu est obligatoire pour créer un inventaire.'])
+                ->withInput();
+        }
 
         // Parser le fichier CSV
         $result = $this->importService->parseInventoryFile($file);
@@ -254,7 +282,8 @@ class InventoryController extends Controller
             $inventoryDate,
             $result['products'],
             $notes,
-            []
+            [],
+            $lieu
         );
 
         $message = 'Inventaire importé avec succès.';

@@ -106,11 +106,11 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Produits les plus vendus</h5>
                 <div class="d-flex gap-2">
-                    <a data-export="{{ route('analytics.export', ['type' => 'top-selling', 'format' => 'csv']) }}" class="btn btn-sm btn-outline-secondary export-link">
-                        <i class="bi bi-file-earmark-spreadsheet"></i> CSV
-                    </a>
                     <a data-export="{{ route('analytics.export', ['type' => 'top-selling', 'format' => 'xlsx']) }}" class="btn btn-sm btn-outline-secondary export-link">
                         <i class="bi bi-file-earmark-excel"></i> Excel
+                    </a>
+                    <a data-export="{{ route('analytics.export', ['type' => 'top-selling', 'format' => 'pdf']) }}" class="btn btn-sm btn-outline-secondary export-link">
+                        <i class="bi bi-file-earmark-pdf"></i> PDF
                     </a>
                 </div>
             </div>
@@ -139,11 +139,11 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Produits les plus rentables</h5>
                 <div class="d-flex gap-2">
-                    <a data-export="{{ route('analytics.export', ['type' => 'top-profitable', 'format' => 'csv']) }}" class="btn btn-sm btn-outline-secondary export-link">
-                        <i class="bi bi-file-earmark-spreadsheet"></i> CSV
-                    </a>
                     <a data-export="{{ route('analytics.export', ['type' => 'top-profitable', 'format' => 'xlsx']) }}" class="btn btn-sm btn-outline-secondary export-link">
                         <i class="bi bi-file-earmark-excel"></i> Excel
+                    </a>
+                    <a data-export="{{ route('analytics.export', ['type' => 'top-profitable', 'format' => 'pdf']) }}" class="btn btn-sm btn-outline-secondary export-link">
+                        <i class="bi bi-file-earmark-pdf"></i> PDF
                     </a>
                 </div>
             </div>

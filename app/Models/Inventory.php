@@ -14,6 +14,7 @@ class Inventory extends Model
         'user_id',
         'inventory_date',
         'status',
+        'lieu',
         'year',
         'month',
         'month_name',

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplyController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\TransferController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -65,16 +66,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/inventories/import', [InventoryController::class, 'import'])->name('inventories.import');
     Route::get('/inventories/history/export', [InventoryController::class, 'historyExport'])->name('inventories.history.export');
     Route::get('/inventories/{inventory}/export/{format}', [InventoryController::class, 'detailsExport'])
-        ->whereIn('format', ['csv', 'xlsx'])
+        ->whereIn('format', ['xlsx', 'pdf'])
         ->name('inventories.details.export');
     Route::get('/inventories/{inventory}', [InventoryController::class, 'show'])->name('inventories.show');
+
+    // Routes transferts
+    Route::get('/transfers', [TransferController::class, 'index'])->name('transfers.index');
+    Route::get('/transfers/create', [TransferController::class, 'create'])->name('transfers.create');
+    Route::post('/transfers', [TransferController::class, 'store'])->name('transfers.store');
+    Route::get('/transfers/{transfer}', [TransferController::class, 'show'])->name('transfers.show');
 
     // Analytics
     Route::get('/analytics', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
     Route::get('/analytics/data', [AnalyticsController::class, 'data'])->name('analytics.data');
     Route::get('/analytics/export/{type}/{format}', [AnalyticsController::class, 'export'])
         ->whereIn('type', ['top-selling', 'top-profitable'])
-        ->whereIn('format', ['csv', 'xlsx'])
+        ->whereIn('format', ['xlsx', 'pdf'])
         ->name('analytics.export');
 });
 

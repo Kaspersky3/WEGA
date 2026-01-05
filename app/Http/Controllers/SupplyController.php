@@ -72,7 +72,7 @@ class SupplyController extends Controller
         $products = Product::where('libelle', 'like', '%' . $query . '%')
             ->orWhere('code_produit', 'like', '%' . $query . '%')
             ->limit(10)
-            ->get(['id', 'code_produit', 'libelle', 'categorie']);
+            ->get(['id', 'code_produit', 'libelle', 'categorie', 'lieu', 'stock_gros', 'stock_detail']);
 
         return response()->json($products);
     }
