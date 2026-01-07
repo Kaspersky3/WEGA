@@ -175,8 +175,9 @@ class ProductController extends Controller
             $productData['bulk_unit_label'] = $validated['bulk_unit_label'];
             $productData['units_per_bulk'] = $validated['units_per_bulk'];
         } else {
-            $productData['bulk_unit_label'] = null;
-            $productData['units_per_bulk'] = null;
+            // Ne pas mettre à null car les colonnes ne sont pas nullable, utiliser les valeurs par défaut
+            $productData['bulk_unit_label'] = 'Carton';
+            $productData['units_per_bulk'] = 1;
         }
 
         // Prix et stocks selon le type
@@ -189,7 +190,7 @@ class ProductController extends Controller
         } else {
             $productData['prix_achat_gros'] = null;
             $productData['prix_vente_gros'] = null;
-            $productData['stock_gros'] = null;
+            $productData['stock_gros'] = 0; // Ne peut pas être null, utiliser 0
         }
 
         if ($request->type_produit == 'Détail' || $request->type_produit == 'Les deux') {
@@ -204,7 +205,7 @@ class ProductController extends Controller
         } else {
             $productData['prix_achat_detail'] = null;
             $productData['prix_vente_detail'] = null;
-            $productData['stock_detail'] = null;
+            $productData['stock_detail'] = 0; // Ne peut pas être null, utiliser 0
         }
 
         // Calcul du stock actuel (en unités détail)
